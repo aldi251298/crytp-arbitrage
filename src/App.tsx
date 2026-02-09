@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef} from 'react';
 import axios from 'axios';
-import { Activity, Server } from 'lucide-react';
+import { Activity, Server, AlertTriangle } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 import type { CoinData, TradeLog } from './types';
@@ -10,62 +10,51 @@ import HistoryPanel from './components/HistoryPanel';
 import MarketTable from './components/MarketTable';
 
 function App() {
-  // --- STATE UI ---
   const [coins, setCoins] = useState<CoinData[]>([]);
   const [status, setStatus] = useState("Connecting..."); 
   const [balance, setBalance] = useState(0); 
   const [totalProfit, setTotalProfit] = useState(0);
   const [history, setHistory] = useState<TradeLog[]>([]);
   
-  // --- STATE SETTINGS ---
   const [isBotActive, setIsBotActive] = useState(false);
   const [botThreshold, setBotThreshold] = useState(2.5);
 
-  // --- REFS (Jembatan Data) ---
   const isBotActiveRef = useRef(isBotActive);
   const botThresholdRef = useRef(botThreshold);
   const lastTradeTime = useRef<number>(0);
-  
-  // Ref untuk menyimpan fungsi fetch supaya bisa dipanggil dari luar useEffect
-  // Kita inisialisasi dengan fungsi kosong dulu
   const fetchDataRef = useRef<() => Promise<void>>(async () => {});
 
-  // Sinkronisasi State ke Ref
   useEffect(() => { isBotActiveRef.current = isBotActive; }, [isBotActive]);
   useEffect(() => { botThresholdRef.current = botThreshold; }, [botThreshold]);
 
-  // --- 1. THE ENGINE (Satu Effect untuk Mengatur Semuanya) ---
+  // --- 1. THE ENGINE ---
   useEffect(() => {
-    // Definisi Logika Fetching DI DALAM Effect (Biar ESLint diam)
     const runEngine = async () => {
       try {
         const res = await axios.get('/api'); 
         const marketData = res.data.market;
 
-        // Update UI
         setCoins(marketData);
         setBalance(res.data.wallet.balance);
         setTotalProfit(res.data.wallet.totalProfit);
         setHistory(res.data.history);
         setStatus("System Online");
 
-        // Logic Bot (Baca dari Ref)
         if (isBotActiveRef.current) {
           const now = Date.now();
           if (now - lastTradeTime.current > 3000) { 
+             // LOGIC BARU: Pakai net_profit
              const bestOpp = marketData.find((c: any) => 
-               parseFloat(c.profit) >= botThresholdRef.current && c.confidence === 'High'
+               parseFloat(c.net_profit) >= botThresholdRef.current && c.confidence === 'High'
              );
              
              if (bestOpp) {
-               // Kita panggil manual trade handler lewat event khusus atau akses langsung
-               // Tapi karena kita di dalam closure, kita butuh akses ke executeTrade
-               // TAPI executeTrade belum didefinisikan.
-               
-               // SOLUSI: Kita kirim sinyal Auto Trade ke API langsung di sini
-               await axios.post('/api', { symbol: bestOpp.symbol, profit: (1000 * parseFloat(bestOpp.profit)/100), type: "AUTO" });
+               await axios.post('/api', { 
+                  symbol: bestOpp.symbol, 
+                  profit: (1000 * parseFloat(bestOpp.net_profit)/100), 
+                  type: "AUTO" 
+               });
                lastTradeTime.current = now;
-               // Kita tidak update UI saldo di sini, biarkan siklus interval berikutnya yang update (lebih aman)
              }
           }
         }
@@ -75,31 +64,23 @@ function App() {
       }
     };
 
-    // 1. Simpan fungsi ini ke Ref supaya tombol manual bisa pakai
     fetchDataRef.current = runEngine;
-
-    // 2. Jalankan Sekali (Mount)
     runEngine();
-
-    // 3. Jalankan Interval
     const interval = setInterval(runEngine, 3000);
-
-    // Cleanup
     return () => clearInterval(interval);
-  }, []); // DEPENDENCY KOSONG (Wajib Kosong biar gak looping!)
+  }, []);
 
-
-  // --- 2. FUNGSI MANUAL TRADE ---
+  // --- 2. FUNGSI TRADE ---
   const executeTrade = async (coin: CoinData, type: "MANUAL" | "AUTO") => {
-    const profitPercent = parseFloat(coin.profit);
+    // LOGIC BARU: Pakai net_profit
+    const profitPercent = parseFloat(coin.net_profit);
     if (profitPercent <= 0 && type === "MANUAL") {
-      toast.error(`Spread ${coin.symbol} negatif!`); return;
+      toast.error(`Net Yield negatif (Rugi di Fee)!`); return;
     }
     
     const tradeAmount = 1000;
     const profitAmount = tradeAmount * (profitPercent / 100);
     
-    // Optimistic UI (Biar user senang)
     setBalance(prev => prev + profitAmount);
     setTotalProfit(prev => prev + profitAmount);
 
@@ -107,8 +88,7 @@ function App() {
       await axios.post('/api', { symbol: coin.symbol, profit: profitAmount, type: type });
       
       if (type === "MANUAL") {
-        toast.success(`Trade Success: ${coin.symbol}`);
-        // Panggil fungsi fetch dari Ref!
+        toast.success(`Trade Executed: ${coin.symbol} -> ${coin.exchange_sell}`);
         fetchDataRef.current(); 
       }
     } catch (err) {
@@ -129,9 +109,10 @@ function App() {
           </div>
           <div className="flex items-center gap-4 text-xs font-mono">
              <div className="flex items-center gap-2 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded bg-emerald-500/10">
-               <Server size={12} /> SERVERLESS VERCEL
+               <Server size={12} /> VERCEL PROD
              </div>
-             <div className="hidden md:block px-2 py-1 bg-slate-800 rounded text-slate-400">
+             <div className="hidden md:flex items-center gap-2 px-2 py-1 bg-slate-800 rounded text-slate-400">
+               {status === "Reconnecting..." ? <AlertTriangle size={12} className="text-red-500"/> : <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>}
                {status}
              </div>
           </div>
@@ -143,7 +124,7 @@ function App() {
           <div className="lg:col-span-2 glass-panel p-6 rounded-2xl flex flex-col justify-center relative overflow-hidden group">
              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
              <h1 className="text-3xl font-bold text-white mb-2 relative z-10">Institutional Arbitrage</h1>
-             <p className="text-slate-400 relative z-10">Powered by Vercel Serverless Functions & Supabase PostgreSQL.</p>
+             <p className="text-slate-400 relative z-10">Real-time Cross-Exchange Scanner with Liquidity Analysis.</p>
           </div>
           <WalletCard balance={balance} totalProfit={totalProfit} />
         </div>

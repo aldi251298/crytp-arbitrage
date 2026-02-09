@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# 🏦 Nexus Terminal - Institutional Arbitrage Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![Project Status](https://img.shields.io/badge/Status-Production-emerald)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Tech Stack](https://img.shields.io/badge/Stack-PERN%20Serverless-purple)
 
-Currently, two official plugins are available:
+**Nexus Terminal** is a professional-grade crypto arbitrage scanner designed to identify and capitalize on price discrepancies between Tier-1 Global Exchanges (e.g., Binance, Coinbase) and Local Markets.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Built with a focus on **Real-time Data Processing**, **Automated Execution Logic**, and **Institutional UI/UX**.
 
-## React Compiler
+ <img width="1096" height="601" alt="crypto" src="https://github.com/user-attachments/assets/55183aff-ea4a-46ce-b3e8-8ef1a46ef6e0" />
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## 🚀 Key Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 📡 Real-time Market Scanner
+-   Aggregates live price data via **Serverless Polling API**.
+-   Calculates **Net Yield** automatically after deducting estimated trading fees (0.2%).
+-   Visualizes price trends using sparklines for quick trend analysis.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🤖 Auto-Sniper Bot (Algorithmic Trading)
+-   **Configurable Threshold:** Users can set specific profit margins (e.g., >2.5%).
+-   **Automated Execution:** The bot monitors the feed 24/7 and executes trades instantly when conditions are met.
+-   **Concurrency Control:** Uses React Refs to manage bot state without triggering unnecessary re-renders.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 💾 Persistent Ledger (PostgreSQL)
+-   Full transaction history stored in **Supabase (PostgreSQL)**.
+-   **ACID Compliant:** Uses Prisma Transactions to ensure wallet balance and trade history are always in sync.
+-   **Optimistic UI:** Provides instant feedback to the user while processing data in the background.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 🎨 Cyberpunk Glassmorphism UI
+-   Modern, dark-mode centric design using **Tailwind CSS v4**.
+-   Interactive components with backdrop-blur effects.
+-   Responsive design for desktop and mobile monitoring.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Architecture & Tech Stack
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+
+[Image of System Architecture Diagram]
+
+
+**Frontend:**
+-   **Framework:** React.js (Vite)
+-   **Language:** TypeScript (Strict Mode)
+-   **Styling:** Tailwind CSS v4 (Zero Config)
+-   **Icons:** Lucide React
+-   **State Management:** React Hooks (useState, useEffect, useRef, useCallback)
+
+**Backend (Serverless):**
+-   **Runtime:** Node.js (Vercel Serverless Functions)
+-   **Database:** PostgreSQL (via Supabase)
+-   **ORM:** Prisma (Type-safe database client)
+-   **API:** RESTful Architecture
+
+Disclaimer
+This project is a Portfolio Demonstration. While the architecture simulates a real-world high-frequency trading environment (Database transactions, API Polling, Bot Logic), the "Arbitrage Opportunities" and "Exchange Routes" are simulated based on real market prices to demonstrate the algorithm's capability without risking real capital.
+
+👨‍💻 Author
+Aldi Syahdan Maulana Fullstack Developer | React & Node.js Enthusiast
+

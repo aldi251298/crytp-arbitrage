@@ -2,7 +2,6 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  // Cek kalau belum ada wallet, buat satu
   const wallet = await prisma.wallet.upsert({
     where: { id: 1 },
     update: {},
@@ -11,7 +10,7 @@ async function main() {
       totalProfit: 0.0,
     },
   })
-  console.log('✅ Wallet siap:', wallet)
+  console.log('✅ Wallet Supabase siap:', wallet)
 }
 
 main()

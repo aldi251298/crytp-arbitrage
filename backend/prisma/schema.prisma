@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // GANTI INI
+  url      = env("DATABASE_URL")
+}
+
+// Model Wallet & Trade biarkan saja, sama persis.
+model Wallet {
+  id          Int   @id @default(1)
+  balance     Float @default(10000.0)
+  totalProfit Float @default(0.0)
+}
+
+model Trade {
+  id        Int      @id @default(autoincrement())
+  symbol    String
+  type      String
+  profit    Float
+  timestamp DateTime @default(now())
+}
